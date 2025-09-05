@@ -1,0 +1,2 @@
+/usr/bin/ar qc libv8wrapper.a CMakeFiles/v8wrapper.dir/src/v8_api_access.cc.o
+/usr/bin/ranlib libv8wrapper.a

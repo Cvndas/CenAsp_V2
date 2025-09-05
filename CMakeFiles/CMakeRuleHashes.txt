@@ -1,0 +1,3 @@
+# Hashes of file build rules.
+fbbef03dde8ce19ec1dab397f0b1ca7f CMakeFiles/codegrade_tests
+65d3fed5672fa7778dbff4da8ec268a8 CMakeFiles/submission

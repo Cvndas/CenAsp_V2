@@ -1,0 +1,38 @@
+[
+{
+  "directory": "/home/asp/CenAsp",
+  "command": "/usr/bin/c++ -DV8_31BIT_SMIS_ON_64BIT_ARCH -DV8_COMPRESS_POINTERS -DV8_ENABLE_POINTER_COMPRESSION -DV8_ENABLE_SANDBOX -DV8_TARGET_ARCH_X64 -I/home/asp/v8/include -I/home/asp/CenAsp/include -g -Wall -fsanitize=address,leak -std=gnu++20 -o CMakeFiles/v8wrapper.dir/src/v8_api_access.cc.o -c /home/asp/CenAsp/src/v8_api_access.cc",
+  "file": "/home/asp/CenAsp/src/v8_api_access.cc",
+  "output": "CMakeFiles/v8wrapper.dir/src/v8_api_access.cc.o"
+},
+{
+  "directory": "/home/asp/CenAsp",
+  "command": "/usr/bin/cc  -I/home/asp/v8/include -I/home/asp/CenAsp/include -g -Wall -fsanitize=address,leak -std=gnu11 -o CMakeFiles/asp_v8.dir/src/main.c.o -c /home/asp/CenAsp/src/main.c",
+  "file": "/home/asp/CenAsp/src/main.c",
+  "output": "CMakeFiles/asp_v8.dir/src/main.c.o"
+},
+{
+  "directory": "/home/asp/CenAsp",
+  "command": "/usr/bin/cc  -I/home/asp/v8/include -I/home/asp/CenAsp/include -g -Wall -fsanitize=address,leak -std=gnu11 -o CMakeFiles/asp_v8.dir/src/m1_2__simple_server.c.o -c /home/asp/CenAsp/src/m1_2__simple_server.c",
+  "file": "/home/asp/CenAsp/src/m1_2__simple_server.c",
+  "output": "CMakeFiles/asp_v8.dir/src/m1_2__simple_server.c.o"
+},
+{
+  "directory": "/home/asp/CenAsp",
+  "command": "/usr/bin/cc  -I/home/asp/v8/include -I/home/asp/CenAsp/include -g -Wall -fsanitize=address,leak -std=gnu11 -o CMakeFiles/asp_v8.dir/src/m3__multi_threaded_server.c.o -c /home/asp/CenAsp/src/m3__multi_threaded_server.c",
+  "file": "/home/asp/CenAsp/src/m3__multi_threaded_server.c",
+  "output": "CMakeFiles/asp_v8.dir/src/m3__multi_threaded_server.c.o"
+},
+{
+  "directory": "/home/asp/CenAsp",
+  "command": "/usr/bin/cc  -I/home/asp/v8/include -I/home/asp/CenAsp/include -g -Wall -fsanitize=address,leak -std=gnu11 -o CMakeFiles/asp_v8.dir/src/m4_5__event_based_server.c.o -c /home/asp/CenAsp/src/m4_5__event_based_server.c",
+  "file": "/home/asp/CenAsp/src/m4_5__event_based_server.c",
+  "output": "CMakeFiles/asp_v8.dir/src/m4_5__event_based_server.c.o"
+},
+{
+  "directory": "/home/asp/CenAsp",
+  "command": "/usr/bin/cc  -I/home/asp/v8/include -I/home/asp/CenAsp/include -g -Wall -fsanitize=address,leak -std=gnu11 -o CMakeFiles/asp_v8.dir/src/utils.c.o -c /home/asp/CenAsp/src/utils.c",
+  "file": "/home/asp/CenAsp/src/utils.c",
+  "output": "CMakeFiles/asp_v8.dir/src/utils.c.o"
+}
+]

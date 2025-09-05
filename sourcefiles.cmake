@@ -1,0 +1,10 @@
+set(SOURCE_FILES
+    src/main.c
+        src/m1_2__simple_server.c
+        src/m3__multi_threaded_server.c
+        src/m4_5__event_based_server.c
+        src/utils.c
+        include/utils.h
+        include/m3__multi_threaded_server.h
+        include/m4_5__event_based_server.h
+)

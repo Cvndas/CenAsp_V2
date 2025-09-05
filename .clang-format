@@ -1,0 +1,29 @@
+Language: Cpp
+BasedOnStyle: LLVM
+IndentWidth: 3
+UseTab: Never
+ColumnLimit: 110
+MaxEmptyLinesToKeep: 10
+PointerAlignment: Left
+
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterFunction: true
+  AfterClass: true
+  AfterStruct: true
+  AfterEnum: true
+  AfterNamespace: true
+  AfterUnion: true
+  AfterControlStatement: false
+  BeforeElse: false
+  BeforeCatch: false
+  SplitEmptyFunction: true
+  SplitEmptyRecord: true
+  SplitEmptyNamespace: true
+
+# Let function params/args spread over multiple lines (but don’t force it)
+BinPackParameters: false
+BinPackArguments: false
+AllowAllParametersOfDeclarationOnNextLine: true
+AllowAllArgumentsOnNextLine: true
+AlignAfterOpenBracket: Align

@@ -1,0 +1,6 @@
+/home/asp/CenAsp/CMakeFiles/v8wrapper.dir
+/home/asp/CenAsp/CMakeFiles/asp_v8.dir
+/home/asp/CenAsp/CMakeFiles/codegrade_tests.dir
+/home/asp/CenAsp/CMakeFiles/submission.dir
+/home/asp/CenAsp/CMakeFiles/edit_cache.dir
+/home/asp/CenAsp/CMakeFiles/rebuild_cache.dir

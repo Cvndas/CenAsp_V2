@@ -1,0 +1,12 @@
+services:
+  dev_cont:
+    build:
+      context: .
+    image: joachimb65/aspv8
+    volumes:
+      - .:/vagrant:z
+    working_dir: /vagrant
+    # privileged: true # <--- ENABLE ME FOR BPFTRACE & PERF (Milestone M4/M5)
+    stdin_open: true # docker run -i
+    tty: true
+    

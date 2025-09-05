@@ -1,0 +1,16 @@
+build/
+
+out.gn/
+Dockerfile
+qemu.sh
+qemu.ps1
+asp_v8
+submission.zip
+*.o
+asp_v8
+*/asp_v8
+*.a
+*.zip
+*.o
+*.o.d
+*.make
