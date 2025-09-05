@@ -174,6 +174,7 @@ void PrintImpl(const v8::FunctionCallbackInfo<v8::Value>& args)
    // don't
    // --- yet know if JS itself calls a function here yet. I'll figure it out.
    dprintFuncEntry();
+   dprint("This is a test print.");
 
    v8::Isolate* currentIsolate = args.GetIsolate();
    if (args.Length() != 1) {

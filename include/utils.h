@@ -1,3 +1,7 @@
+#define CENDEBUG
+#define PRINT_FUNCTION_ENTRY
+#define PRINT_FUNCTION_EXIT
+
 /**
  * The MIT License (MIT)
  *
@@ -51,8 +55,10 @@ void telemetry_get_start_time(struct timespec* out);
 
 void start_server(V8Engine* engine);
 
-// ::: -------------------------:: MACROS ::------------------------- ::: //
-#define CENDEBUG
+
+
+
+// ::: -------------------------:: Debug Macros ::------------------------- ::: //
 
 #define GREENPRINT "\033[32m"
 #define YELLOWPRINT "\033[33m"
@@ -65,29 +71,40 @@ void start_server(V8Engine* engine);
 // before if there are no arguments
 #ifdef CENDEBUG
 #define dprint(fmt, ...)                                                                                     \
-    do {                                                                                                     \
-        fprintf(stderr,                                                                                      \
-                GREENPRINT "%s" STOP_COLORING ":::" PURPLEPRINT "%s" STOP_COLORING " " fmt,                  \
-                __func__,                                                                                    \
-                __FILE__,                                                                                    \
-                ##__VA_ARGS__);                                                                              \
-        fprintf(stderr, "\n");                                                                               \
-        fflush(stderr);                                                                                      \
-    } while (0);
+   do {                                                                                                      \
+      fprintf(stderr,                                                                                        \
+              GREENPRINT "%s" STOP_COLORING ":::" PURPLEPRINT "%s" STOP_COLORING " " fmt,                    \
+              __func__,                                                                                      \
+              __FILE__,                                                                                      \
+              ##__VA_ARGS__);                                                                                \
+      fprintf(stderr, "\n");                                                                                 \
+      fflush(stderr);                                                                                        \
+   } while (0);
 
 
+#ifdef PRINT_FUNCTION_EXIT
 #define dprintFuncExit() fprintf(stderr, BLUEPRINT "EXITED %s\n" STOP_COLORING, __func__)
+#else
+#define dprintFuncExit() //
+#endif
+
+#ifdef PRINT_FUNCTION_ENTRY
 #define dprintFuncEntry() fprintf(stderr, YELLOWPRINT "ENTERED %s\n" STOP_COLORING, __func__)
+#else
+#define dprintFuncEntry() //
+#endif
 
 
 #else
 #define dprint(...)                                                                                          \
-    do {                                                                                                     \
-    } while (0)
+   do {                                                                                                      \
+   } while (0)
 
 #define dprintFuncExit()  //
 #define dprintFuncEntry() //
-#endif
+#endif                    // ::: CENDEBUG
+
+
 
 
 
