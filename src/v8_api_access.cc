@@ -120,7 +120,6 @@ void CFunctionCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
  *   - v8::Value::IsNumber, IsFunction -> Type checks for V8 values.
  *   - v8::Exception::ThrowException -> Throws a JavaScript exception from C++.
  */
-// TODO: M2, implement
 void SyncCallBackImpl(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
    dprintFuncEntry();
@@ -154,7 +153,10 @@ void SyncCallBackImpl(const v8::FunctionCallbackInfo<v8::Value>& args)
 
    // ::: Forming an array with additional arguments
    int functionArgumentCount = args.Length() - 1;
-   v8::Local<v8::Value> functionArguments[functionArgumentCount];
+
+   // ::: Using a Vector instead of C array, as clangd warned that variable length arrays are a compiler
+   // --- extension in c++.
+   std::vector<v8::Local<v8::Value>> functionArguments(functionArgumentCount);
    for (int i = 0; i < functionArgumentCount; i++) {
       // ::: Offset by 1, as the 0th argument in args[] is the function.
       functionArguments[i] = args[i + 1];
@@ -163,7 +165,7 @@ void SyncCallBackImpl(const v8::FunctionCallbackInfo<v8::Value>& args)
    // ::: In javascript, as far as I understand, plain functions are actually like methods, but tied to global
    // --- instead of a class instance
    v8::MaybeLocal<v8::Value> result = providedCallback->Call(
-      currentContext, currentContext->Global(), functionArgumentCount, functionArguments);
+      currentContext, currentContext->Global(), functionArgumentCount, functionArguments.data());
 
    // ::: ToLocalChecked() crashes v8 if the result is empty, which is good, as it means the JS code had a
    // bug.
