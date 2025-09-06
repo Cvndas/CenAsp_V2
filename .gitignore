@@ -14,3 +14,4 @@ asp_v8
 *.o
 *.o.d
 *.make
+*.idx

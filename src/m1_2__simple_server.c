@@ -69,19 +69,12 @@
  * @param port The port number to bind the server socket to.
  * @return The file descriptor of the listening server socket, or -1 on error.
  */
-static int create_and_bind_socket(int port) {
-    /**
-        ┏━━━━┓┏━━━┓━┏━━━┓┏━━━┓
-        ┃┏┓┏┓┃┃┏━┓┃━┗┓┏┓┃┃┏━┓┃
-        ┗┛┃┃┗┛┃┃━┃┃ ━┃┃┃┃┃┃━┃┃
-        ━━┃┃━━┃┃━┃┃━━┃┃┃┃┃┃━┃┃
-        ━┏┛┗┓━┃┗━┛┃━┏┛┗┛┃┃┗━┛┃
-        ━┗━━┛━┗━━━┛━┗━━━┛┗━━━┛
-        ━━━━━━━━━━━━━━━━━━━━━
-        ━━━ Your code here...
-        ━━━━━━━━━━━━━━━━━━━━━
-        */
-    return 0;
+// TODO: Implement M2
+static int create_and_bind_socket(int port)
+{
+   dprintFuncEntry();
+   dprintFuncExit();
+   return 0;
 }
 
 /**
@@ -111,19 +104,12 @@ static int create_and_bind_socket(int port) {
  * (excluding the null terminator).
  * @return Pointer to the data up to and including '42', or NULL on error.
  */
-static char* read_until_42(int socket_fd, size_t* out_len) {
-    /**
-    ┏━━━━┓┏━━━┓━┏━━━┓┏━━━┓
-    ┃┏┓┏┓┃┃┏━┓┃━┗┓┏┓┃┃┏━┓┃
-    ┗┛┃┃┗┛┃┃━┃┃ ━┃┃┃┃┃┃━┃┃
-    ━━┃┃━━┃┃━┃┃━━┃┃┃┃┃┃━┃┃
-    ━┏┛┗┓━┃┗━┛┃━┏┛┗┛┃┃┗━┛┃
-    ━┗━━┛━┗━━━┛━┗━━━┛┗━━━┛
-    ━━━━━━━━━━━━━━━━━━━━━
-    ━━━ Your code here...
-    ━━━━━━━━━━━━━━━━━━━━━
-    */
-    return NULL;
+// TODO: Implement M2
+static char* read_until_42(int socket_fd, size_t* out_len)
+{
+   dprintFuncEntry();
+   dprintFuncExit();
+   return NULL;
 }
 
 /**
@@ -152,18 +138,13 @@ static char* read_until_42(int socket_fd, size_t* out_len) {
  * @param buffer Pointer to the buffer holding the client request data (to be
  * freed).
  */
-static void client_response(int new_socket, JSResult* result, char* buffer) {
-    /**
-        ┏━━━━┓┏━━━┓━┏━━━┓┏━━━┓
-        ┃┏┓┏┓┃┃┏━┓┃━┗┓┏┓┃┃┏━┓┃
-        ┗┛┃┃┗┛┃┃━┃┃ ━┃┃┃┃┃┃━┃┃
-        ━━┃┃━━┃┃━┃┃━━┃┃┃┃┃┃━┃┃
-        ━┏┛┗┓━┃┗━┛┃━┏┛┗┛┃┃┗━┛┃
-        ━┗━━┛━┗━━━┛━┗━━━┛┗━━━┛
-        ━━━━━━━━━━━━━━━━━━━━━
-        ━━━ Your code here...
-        ━━━━━━━━━━━━━━━━━━━━━
-        */
+// TODO implement m2
+static void client_response(int new_socket, JSResult* result, char* buffer)
+{
+   dprintFuncEntry();
+
+   dprintFuncExit();
+   return;
 }
 
 
@@ -184,28 +165,29 @@ static void client_response(int new_socket, JSResult* result, char* buffer) {
  * Handles requests calling V8                               *
  *************************************************************
  */
-static void handle_client(V8Engine* engine, int new_socket) {
-    size_t data_len = 0;
-    char* buffer = read_until_42(new_socket, &data_len);
-    if (!buffer) {
-        perror("Failed to read from socket");
-        close(new_socket);
-        return;
-    }
-    void* handler_ptr = v8_get_registered_handler_func(engine);
-    if (!handler_ptr) {
-        fprintf(stderr,
-                "No JS handler registered. Did you call ASP.createServer in "
-                "your script?\n");
-        free(buffer);
-        close(new_socket);
-        return;
-    }
-    JSResult result = v8_call_registered_handler_string(engine, buffer);
-    client_response(new_socket, &result, buffer);
-    if (result.type == JS_STRING) {
-        free(result.value.str_result);
-    }
+static void handle_client(V8Engine* engine, int new_socket)
+{
+   size_t data_len = 0;
+   char* buffer = read_until_42(new_socket, &data_len);
+   if (!buffer) {
+      perror("Failed to read from socket");
+      close(new_socket);
+      return;
+   }
+   void* handler_ptr = v8_get_registered_handler_func(engine);
+   if (!handler_ptr) {
+      fprintf(stderr,
+              "No JS handler registered. Did you call ASP.createServer in "
+              "your script?\n");
+      free(buffer);
+      close(new_socket);
+      return;
+   }
+   JSResult result = v8_call_registered_handler_string(engine, buffer);
+   client_response(new_socket, &result, buffer);
+   if (result.type == JS_STRING) {
+      free(result.value.str_result);
+   }
 }
 
 
@@ -240,19 +222,13 @@ static void handle_client(V8Engine* engine, int new_socket) {
  * @param server_fd The file descriptor of the listening server socket.
  * @return The file descriptor for the accepted client socket, or -1 on error.
  */
-static int accept_client_connection(int server_fd) {
-    /**
-        ┏━━━━┓┏━━━┓━┏━━━┓┏━━━┓
-        ┃┏┓┏┓┃┃┏━┓┃━┗┓┏┓┃┃┏━┓┃
-        ┗┛┃┃┗┛┃┃━┃┃ ━┃┃┃┃┃┃━┃┃
-        ━━┃┃━━┃┃━┃┃━━┃┃┃┃┃┃━┃┃
-        ━┏┛┗┓━┃┗━┛┃━┏┛┗┛┃┃┗━┛┃
-        ━┗━━┛━┗━━━┛━┗━━━┛┗━━━┛
-        ━━━━━━━━━━━━━━━━━━━━━
-        ━━━ Your code here...
-        ━━━━━━━━━━━━━━━━━━━━━
-        */
-    return 0;
+// TODO: Implement M2
+static int accept_client_connection(int server_fd)
+{
+   dprintFuncEntry();
+
+   dprintFuncExit();
+   return 0;
 }
 
 
@@ -274,20 +250,21 @@ static int accept_client_connection(int server_fd) {
  * Starts the server and accepts incoming requests           *
  *************************************************************
  */
-int start_single_threaded_server(V8Engine* engine, int port) {
-    int server_fd = create_and_bind_socket(port);
-    server_fd_global = server_fd;
-    if (server_fd < 0)
-        return 1;
-    while (server_running) {
-        int new_socket;
-        if ((new_socket = accept_client_connection(server_fd)) < 0) {
-            if (!server_running)
-                break;
-            continue;
-        }
-        handle_client(engine, new_socket);
-    }
-    printf("Server stopped.\n");
-    return 0;
+int start_single_threaded_server(V8Engine* engine, int port)
+{
+   int server_fd = create_and_bind_socket(port);
+   server_fd_global = server_fd;
+   if (server_fd < 0)
+      return 1;
+   while (server_running) {
+      int new_socket;
+      if ((new_socket = accept_client_connection(server_fd)) < 0) {
+         if (!server_running)
+            break;
+         continue;
+      }
+      handle_client(engine, new_socket);
+   }
+   printf("Server stopped.\n");
+   return 0;
 }

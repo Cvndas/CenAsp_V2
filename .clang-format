@@ -1,6 +1,7 @@
 Language: Cpp
 BasedOnStyle: LLVM
 IndentWidth: 3
+ContinuationIndentWidth: 3
 UseTab: Never
 ColumnLimit: 110
 MaxEmptyLinesToKeep: 10

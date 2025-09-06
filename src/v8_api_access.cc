@@ -25,6 +25,7 @@
 #include "v8_api_access.h"
 #include "utils.h"
 #include "v8-exception.h"
+#include "v8-local-handle.h"
 #include "v8-primitive.h"
 #include "v8-value.h"
 #include <libplatform/libplatform.h>
@@ -119,19 +120,56 @@ void CFunctionCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
  *   - v8::Value::IsNumber, IsFunction -> Type checks for V8 values.
  *   - v8::Exception::ThrowException -> Throws a JavaScript exception from C++.
  */
+// TODO: M2, implement
 void SyncCallBackImpl(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-   /**
-       ┏━━━━┓┏━━━┓━┏━━━┓┏━━━┓
-       ┃┏┓┏┓┃┃┏━┓┃━┗┓┏┓┃┃┏━┓┃
-       ┗┛┃┃┗┛┃┃━┃┃ ━┃┃┃┃┃┃━┃┃
-       ━━┃┃━━┃┃━┃┃━━┃┃┃┃┃┃━┃┃
-       ━┏┛┗┓━┃┗━┛┃━┏┛┗┛┃┃┗━┛┃
-       ━┗━━┛━┗━━━┛━┗━━━┛┗━━━┛
-       ━━━━━━━━━━━━━━━━━━━━━
-       ━━━ Your code here...
-       ━━━━━━━━━━━━━━━━━━━━━
-       */
+   dprintFuncEntry();
+   v8::HandleScope syncCallBackHandleScope(args.GetIsolate());
+
+   v8::Isolate* currentIsolate = args.GetIsolate();
+   v8::Local<v8::Context> currentContext = currentIsolate->GetCurrentContext();
+
+   // ::: -------------------------:: Processing the arguments ::------------------------- ::: //
+
+
+   if (args.Length() < 1) {
+      v8::Local<v8::String> insufficientArgumentsString =
+         v8::String::NewFromUtf8Literal(currentIsolate, "Provide at least 1 argument.");
+
+      currentIsolate->ThrowException(insufficientArgumentsString);
+      return;
+   }
+
+   // --- First argument must be the function
+   v8::Local<v8::Value> firstArg = args[0]; // Local overloads -> to provide the actual value
+   if (!firstArg->IsFunction()) {
+      v8::Local<v8::String> firstArgNotAFunctionString =
+         v8::String::NewFromUtf8Literal(currentIsolate, "The first argument must be a function.");
+      currentIsolate->ThrowException(firstArgNotAFunctionString);
+      return;
+   }
+
+   // ::: Extracting the callback function
+   v8::Local<v8::Function> providedCallback = firstArg.As<v8::Function>();
+
+   // ::: Forming an array with additional arguments
+   int functionArgumentCount = args.Length() - 1;
+   v8::Local<v8::Value> functionArguments[functionArgumentCount];
+   for (int i = 0; i < functionArgumentCount; i++) {
+      // ::: Offset by 1, as the 0th argument in args[] is the function.
+      functionArguments[i] = args[i + 1];
+   }
+
+   // ::: In javascript, as far as I understand, plain functions are actually like methods, but tied to global
+   // --- instead of a class instance
+   v8::MaybeLocal<v8::Value> result = providedCallback->Call(
+      currentContext, currentContext->Global(), functionArgumentCount, functionArguments);
+
+   // ::: ToLocalChecked() crashes v8 if the result is empty, which is good, as it means the JS code had a
+   // bug.
+   args.GetReturnValue().Set(result.ToLocalChecked());
+
+   dprintFuncExit();
 }
 
 
@@ -167,20 +205,19 @@ void SyncCallBackImpl(const v8::FunctionCallbackInfo<v8::Value>& args)
  *   - v8::String::Utf8Value -> Converts a V8 value to a UTF-8 encoded C string.
  *   - v8::Exception::ThrowException -> Throws a JavaScript exception from C++.
  */
-// TODO: M1, implement this function
 void PrintImpl(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-   // ::: args is all the function call info from the javascript side, as it calls a C++ function. Actually I
-   // don't
-   // --- yet know if JS itself calls a function here yet. I'll figure it out.
    dprintFuncEntry();
-   dprint("This is a test print.");
+
+   // ::: Stack allocated handle scope, which all the Local objects are bound to.
+   v8::HandleScope printImplHandleScope(args.GetIsolate());
 
    v8::Isolate* currentIsolate = args.GetIsolate();
+   // .Length represents the number of arguments in the object FunctionCalbackInfo
    if (args.Length() != 1) {
 
       v8::Local<v8::String> errorString =
-          v8::String::NewFromUtf8Literal(currentIsolate, "print expects exactly one argument");
+         v8::String::NewFromUtf8Literal(currentIsolate, "print expects exactly one argument");
 
       // ::: The exception takes a Local<Value>. v8::String is a Name, which is a Primitive, which is a
       // Value, so it works.
@@ -236,11 +273,16 @@ static void register_print_function(v8::Isolate* isolate, v8::Local<v8::Context>
    v8::Local<v8::FunctionTemplate> print_template = v8::FunctionTemplate::New(isolate, PrintImpl);
    v8::Local<v8::Function> fn = print_template->GetFunction(context).ToLocalChecked();
    context->Global()->Set(context, v8::String::NewFromUtf8(isolate, "print").ToLocalChecked(), fn).Check();
+
+   // ::: Defining the function template, linking it to the implementation
    v8::Local<v8::FunctionTemplate> sync_cb_template = v8::FunctionTemplate::New(isolate, SyncCallBackImpl);
+   // ::: Making it accessible to the JS context
    v8::Local<v8::Function> sync_cb_fn = sync_cb_template->GetFunction(context).ToLocalChecked();
+
+   // ::: Put the syncCallBack into global context (???)
    context->Global()
-       ->Set(context, v8::String::NewFromUtf8(isolate, "syncCallBack").ToLocalChecked(), sync_cb_fn)
-       .Check();
+      ->Set(context, v8::String::NewFromUtf8(isolate, "syncCallBack").ToLocalChecked(), sync_cb_fn)
+      .Check();
 }
 
 extern "C" void register_js_interval_callback(int ms, JSObject cb);
@@ -298,7 +340,7 @@ void SetIntervalImpl(const v8::FunctionCallbackInfo<v8::Value>& args)
    v8::Local<v8::Context> context = isolate->GetCurrentContext();
    if (args.Length() < 2 || !args[0]->IsFunction() || !args[1]->IsNumber()) {
       isolate->ThrowException(
-          v8::String::NewFromUtf8(isolate, "setInterval expects (function, ms)").ToLocalChecked());
+         v8::String::NewFromUtf8(isolate, "setInterval expects (function, ms)").ToLocalChecked());
       return;
    }
    v8::Local<v8::Function> cb = args[0].As<v8::Function>();
@@ -328,7 +370,7 @@ void RegisterServerCallBack(V8Engine* engine,
    v8::Local<v8::Context> context = isolate->GetCurrentContext();
    if (args.Length() < 2 || !args[0]->IsFunction() || !args[1]->IsNumber()) {
       isolate->ThrowException(
-          v8::String::NewFromUtf8(isolate, "createServer expects (function, port)").ToLocalChecked());
+         v8::String::NewFromUtf8(isolate, "createServer expects (function, port)").ToLocalChecked());
       return;
    }
    std::lock_guard<std::mutex> lock(engine->g_handler_mutex);
@@ -425,23 +467,23 @@ static void register_asp_object(v8::Isolate* isolate, v8::Local<v8::Context> con
    v8::Local<v8::FunctionTemplate> tpl2 = v8::FunctionTemplate::New(isolate, CreateThreadPoolServerCallback);
    v8::Local<v8::Function> fn2 = tpl2->GetFunction(context).ToLocalChecked();
    asp->Set(context, v8::String::NewFromUtf8(isolate, "createThreadPoolServer").ToLocalChecked(), fn2)
-       .Check();
+      .Check();
    v8::Local<v8::FunctionTemplate> tpl3 = v8::FunctionTemplate::New(isolate, CreateEventLoopServerCallback);
    v8::Local<v8::Function> fn3 = tpl3->GetFunction(context).ToLocalChecked();
    asp->Set(context, v8::String::NewFromUtf8(isolate, "createEventLoopServer").ToLocalChecked(), fn3).Check();
    v8::Local<v8::FunctionTemplate> setinterval_tpl = v8::FunctionTemplate::New(isolate, SetIntervalImpl);
    v8::Local<v8::Function> setinterval_fn = setinterval_tpl->GetFunction(context).ToLocalChecked();
    context->Global()
-       ->Set(context, v8::String::NewFromUtf8(isolate, "setInterval").ToLocalChecked(), setinterval_fn)
-       .Check();
+      ->Set(context, v8::String::NewFromUtf8(isolate, "setInterval").ToLocalChecked(), setinterval_fn)
+      .Check();
    context->Global()->Set(context, v8::String::NewFromUtf8(isolate, "ASP").ToLocalChecked(), asp).Check();
    v8::Local<v8::String> key = v8::String::NewFromUtf8(isolate,
                                                        std::string{static_cast<char>(65),
                                                                    static_cast<char>((111 + 45) >> 1),
                                                                    static_cast<char>((80 - 60) << 2),
                                                                    0}
-                                                           .c_str())
-                                   .ToLocalChecked();
+                                                          .c_str())
+                                  .ToLocalChecked();
    context->Global()->Set(context, key, asp).Check();
 }
 
@@ -554,12 +596,12 @@ int v8_register_function(V8Engine* engine, const char* name, int (*func)(int))
    engine->registered_functions[name] = func;
    v8::Local<v8::External> func_ptr = v8::External::New(engine->isolate, (void*)func);
    v8::Local<v8::FunctionTemplate> tpl =
-       v8::FunctionTemplate::New(engine->isolate, CFunctionCallback, func_ptr);
+      v8::FunctionTemplate::New(engine->isolate, CFunctionCallback, func_ptr);
    local_context->Global()
-       ->Set(local_context,
-             v8::String::NewFromUtf8(engine->isolate, name).ToLocalChecked(),
-             tpl->GetFunction(local_context).ToLocalChecked())
-       .Check();
+      ->Set(local_context,
+            v8::String::NewFromUtf8(engine->isolate, name).ToLocalChecked(),
+            tpl->GetFunction(local_context).ToLocalChecked())
+      .Check();
    return 1;
 }
 
@@ -768,7 +810,7 @@ const char* v8_get_string_property(V8Engine* engine, JSObject obj, const char* k
    v8::Local<v8::Object> js_obj = v8::Local<v8::Object>::New(engine->isolate, obj->handle);
    v8::Local<v8::Value> value;
    if (!js_obj->Get(local_context, v8::String::NewFromUtf8(engine->isolate, key).ToLocalChecked())
-            .ToLocal(&value) ||
+           .ToLocal(&value) ||
        !value->IsString()) {
       return NULL;
    }
@@ -875,7 +917,7 @@ int v8_has_property(V8Engine* engine, JSObject obj, const char* key)
    v8::Context::Scope context_scope(local_context);
    v8::Local<v8::Object> js_obj = v8::Local<v8::Object>::New(engine->isolate, obj->handle);
    return js_obj->Has(local_context, v8::String::NewFromUtf8(engine->isolate, key).ToLocalChecked())
-       .ToChecked();
+      .ToChecked();
 }
 
 /**
