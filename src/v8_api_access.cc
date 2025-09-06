@@ -128,9 +128,7 @@ void SyncCallBackImpl(const v8::FunctionCallbackInfo<v8::Value>& args)
    v8::Isolate* currentIsolate = args.GetIsolate();
    v8::Local<v8::Context> currentContext = currentIsolate->GetCurrentContext();
 
-   // ::: -------------------------:: Processing the arguments ::------------------------- ::: //
-
-
+   // ::: At least one argument must be provided (the function in slot 0)
    if (args.Length() < 1) {
       v8::Local<v8::String> insufficientArgumentsString =
          v8::String::NewFromUtf8Literal(currentIsolate, "Provide at least 1 argument.");
@@ -155,7 +153,7 @@ void SyncCallBackImpl(const v8::FunctionCallbackInfo<v8::Value>& args)
    int functionArgumentCount = args.Length() - 1;
 
    // ::: Using a Vector instead of C array, as clangd warned that variable length arrays are a compiler
-   // --- extension in c++.
+   // --- extension in c++. Alternative would've been malloc, but this is a c++ file so let's not
    std::vector<v8::Local<v8::Value>> functionArguments(functionArgumentCount);
    for (int i = 0; i < functionArgumentCount; i++) {
       // ::: Offset by 1, as the 0th argument in args[] is the function.

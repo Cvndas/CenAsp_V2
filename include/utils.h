@@ -34,6 +34,9 @@
 #include "v8_api_access.h"
 #include <time.h>
 
+#include <stdint.h>
+
+
 extern int server_fd_global;
 extern volatile sig_atomic_t server_running;
 
@@ -55,6 +58,15 @@ void telemetry_get_start_time(struct timespec* out);
 
 void start_server(V8Engine* engine);
 
+
+
+// ::: -------------------------:: Typedefs ::------------------------- ::: //
+typedef uint16_t u16;
+typedef uint32_t u32;
+typedef uint8_t u8;
+typedef int32_t i32;
+typedef int16_t i16;
+typedef int8_t i8;
 
 
 

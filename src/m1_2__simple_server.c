@@ -25,6 +25,8 @@
 #include "m1_2__simple_server.h"
 #include "v8_api_access.h"
 
+#include <asm-generic/socket.h>
+#include <assert.h>
 #include <netinet/in.h>
 #include <signal.h>
 #include <stdio.h>
@@ -73,8 +75,57 @@
 static int create_and_bind_socket(int port)
 {
    dprintFuncEntry();
+
+   int socketFd = socket(AF_INET, SOCK_STREAM, 0);
+   if (socketFd == -1) {
+      perror("Failed to create socket");
+      return socketFd;
+   }
+
+   // ::: The SO_REUSEADDR allows reuse of the entire address, so both ipv4 and port.
+   // --- source: https://www.baeldung.com/linux/socket-options-difference
+   int enabled = 1;
+   int sockOptResult = setsockopt(socketFd, SOL_SOCKET, SO_REUSEADDR, (const void*)&enabled, sizeof(enabled));
+   if (sockOptResult == -1) {
+      perror("Failed to set sockOpt for SO_REUSEADDR");
+      goto CLEANUP_SOCKET_ON_ERROR;
+   }
+
+   // ::: Building the address struct
+   struct sockaddr_in serverAddress = {
+      .sin_addr.s_addr = htonl(INADDR_ANY), // ::: sin_addr is another struct with a single entry: s_addr
+      .sin_port = htons((u16)port),
+      .sin_family = AF_INET,
+   };
+
+   // ::: Binding the socket to the address
+   int bindResult = bind(socketFd, (const struct sockaddr*)&serverAddress, sizeof(struct sockaddr_in));
+   if (bindResult == -1) {
+      perror("Failed to bind socket to the address");
+      goto CLEANUP_SOCKET_ON_ERROR;
+   }
+
+   // ::: Marking the socket as passive listener
+   int listenResult = listen(socketFd, 1);
+   if (listenResult == -1) {
+      perror("Failed to mark socket as passive listener");
+      goto CLEANUP_SOCKET_ON_ERROR;
+      return -1;
+   }
+
+   // ::: -------------------------:: Success! ::------------------------- ::: //
    dprintFuncExit();
    return 0;
+
+
+
+
+CLEANUP_SOCKET_ON_ERROR:
+   // ::: -------------------------:: Failure... ::------------------------- ::: //
+   fprintf(stderr, "Closing socket...");
+   close(socketFd);
+   dprintFuncExit();
+   return -1;
 }
 
 /**
