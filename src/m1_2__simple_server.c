@@ -76,16 +76,17 @@ static int create_and_bind_socket(int port)
 {
    dprintFuncEntry();
 
-   int socketFd = socket(AF_INET, SOCK_STREAM, 0);
-   if (socketFd == -1) {
+   int serverSocketFd = socket(AF_INET, SOCK_STREAM, 0);
+   if (serverSocketFd == -1) {
       perror("Failed to create socket");
-      return socketFd;
+      return serverSocketFd;
    }
 
    // ::: The SO_REUSEADDR allows reuse of the entire address, so both ipv4 and port.
    // --- source: https://www.baeldung.com/linux/socket-options-difference
    int enabled = 1;
-   int sockOptResult = setsockopt(socketFd, SOL_SOCKET, SO_REUSEADDR, (const void*)&enabled, sizeof(enabled));
+   int sockOptResult =
+      setsockopt(serverSocketFd, SOL_SOCKET, SO_REUSEADDR, (const void*)&enabled, sizeof(enabled));
    if (sockOptResult == -1) {
       perror("Failed to set sockOpt for SO_REUSEADDR");
       goto CLEANUP_SOCKET_ON_ERROR;
@@ -99,14 +100,14 @@ static int create_and_bind_socket(int port)
    };
 
    // ::: Binding the socket to the address
-   int bindResult = bind(socketFd, (const struct sockaddr*)&serverAddress, sizeof(struct sockaddr_in));
+   int bindResult = bind(serverSocketFd, (const struct sockaddr*)&serverAddress, sizeof(struct sockaddr_in));
    if (bindResult == -1) {
       perror("Failed to bind socket to the address");
       goto CLEANUP_SOCKET_ON_ERROR;
    }
 
    // ::: Marking the socket as passive listener
-   int listenResult = listen(socketFd, 1);
+   int listenResult = listen(serverSocketFd, 1);
    if (listenResult == -1) {
       perror("Failed to mark socket as passive listener");
       goto CLEANUP_SOCKET_ON_ERROR;
@@ -115,7 +116,7 @@ static int create_and_bind_socket(int port)
 
    // ::: -------------------------:: Success! ::------------------------- ::: //
    dprintFuncExit();
-   return 0;
+   return serverSocketFd;
 
 
 
@@ -123,7 +124,7 @@ static int create_and_bind_socket(int port)
 CLEANUP_SOCKET_ON_ERROR:
    // ::: -------------------------:: Failure... ::------------------------- ::: //
    fprintf(stderr, "Closing socket...");
-   close(socketFd);
+   close(serverSocketFd);
    dprintFuncExit();
    return -1;
 }
@@ -273,13 +274,22 @@ static void handle_client(V8Engine* engine, int new_socket)
  * @param server_fd The file descriptor of the listening server socket.
  * @return The file descriptor for the accepted client socket, or -1 on error.
  */
-// TODO: Implement M2
 static int accept_client_connection(int server_fd)
 {
    dprintFuncEntry();
+   struct sockaddr_in clientAddress = {0};
+   socklen_t addressLength = sizeof(struct sockaddr_in);
+
+   int acceptResult = accept(server_fd, (struct sockaddr*)&clientAddress, &addressLength);
+   if (acceptResult == -1) {
+      perror("Failed to accept connection");
+      return -1;
+   }
+   // ::: No error, so acceptResult represents the fd of the new socket for this connection.
+   dprint("Accepted a connection.");
 
    dprintFuncExit();
-   return 0;
+   return acceptResult;
 }
 
 

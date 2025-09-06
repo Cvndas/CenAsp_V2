@@ -15,3 +15,4 @@ asp_v8
 *.o.d
 *.make
 *.idx
+*.internal
