@@ -34,6 +34,7 @@
 #include "v8_api_access.h"
 #include <time.h>
 
+#include <stdbool.h>
 #include <stdint.h>
 
 
@@ -68,6 +69,9 @@ typedef int32_t i32;
 typedef int16_t i16;
 typedef int8_t i8;
 
+
+// ::: -------------------------:: Other useful macros ::------------------------- ::: //
+#define NULL_TERMINATOR_SIZE 1
 
 
 // ::: -------------------------:: Debug Macros ::------------------------- ::: //

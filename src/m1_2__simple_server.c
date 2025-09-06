@@ -160,8 +160,89 @@ CLEANUP_SOCKET_ON_ERROR:
 static char* read_until_42(int socket_fd, size_t* out_len)
 {
    dprintFuncEntry();
+
+   // ::: NULL by default, only updated on success
+   char* ret = NULL;
+
+   size_t bytesRead = 0;
+   size_t bufferSize = 128;
+   size_t readIndex = 0;
+
+   char* readBuffer = (char*)malloc(bufferSize);
+   if (!readBuffer) {
+      fprintf(stderr, "Malloc failed");
+      goto RETURN;
+   }
+
+   // ::: TODO: Keep reading for as long as data is available, or until 2 is read. Then check previous char.
+   // If it's
+   // --- 4, copy to new string with appropriate size, and put a null terminator at the end.
+   while (true) {
+      bytesRead = read(socket_fd, readBuffer + bytesRead, bufferSize);
+
+      // ::: EOF, which means disconnection in the case of TCP socket.
+      if (bytesRead == 0) {
+         dprint("The client disconnected.");
+         goto FREE_BUFFER;
+      }
+      // ::: Error
+      else if (bytesRead == -1) {
+         perror("An error occured while reading from socket");
+         goto FREE_BUFFER;
+      }
+
+      { // ::: Search for the string "42" in the read data
+         // TODO: Debug for off-by-one error. < or <=, not sure which right now.
+         while (readIndex < bufferSize) {
+            bool fourtwoPatternFound =
+               (readBuffer[readIndex] == '2') && (readIndex >= 1) && (readBuffer[readIndex - 1] == '4');
+            if (fourtwoPatternFound) {
+
+               // ::: We have read everything there is to read. Whatever was left in the buffer is garbage.
+               size_t actualStringLength =
+                  readIndex + 1 + NULL_TERMINATOR_SIZE; // + 1 because readIndex starts at 0.
+               ret = (char*)malloc(sizeof(char) * actualStringLength);
+               if (!ret) {
+                  fprintf(stderr, "Malloc failed");
+                  goto FREE_BUFFER;
+               }
+
+               assert(actualStringLength == (readIndex + 2));
+               assert(bufferSize >= (readIndex + 1));
+
+               // ::: Memsetting to 99 so I can inspect memory and verify that ever 99 is overwritten
+               memset(ret, 99, sizeof(char) * actualStringLength);
+               memcpy(ret, readBuffer, readIndex + 1);
+
+               ret[actualStringLength - 1] = '\0';
+
+               goto FREE_BUFFER;
+            }
+
+
+            readIndex++;
+         }
+      }
+
+      // ::: There's PROBABLY still data in the socket. Let's realloc so we have enough space to read it.
+      if (bytesRead == bufferSize) {
+         bufferSize *= 2;
+         char* reallocPtr = (char*)realloc(readBuffer, bufferSize);
+         if (!reallocPtr) {
+            fprintf(stderr, "realloc() failed");
+            goto FREE_BUFFER;
+         }
+         readBuffer = reallocPtr;
+      }
+   }
+
+
+FREE_BUFFER:
+   free(readBuffer);
+
+RETURN:
    dprintFuncExit();
-   return NULL;
+   return ret;
 }
 
 /**
